@@ -1,9 +1,39 @@
+from PIL import Image, ImageGrab
+from time import sleep, localtime
+import pyautogui
 import os
 import getpass
 import time
 from datetime import datetime
 
 cur = getpass.getuser()
+pyautogui.keyDown("f6")
+pyautogui.hotkey('win','d')
+sleep(1)
+img = ImageGrab.grab(bbox = None)
+tmp_pic = localtime()
+name_for_pic = f"{tmp_pic[3]}_{tmp_pic[4]}_of_{tmp_pic[2]}_{tmp_pic[1]}_{tmp_pic[0]}.bmp"
+img.save(f"/Users/{cur}/Desktop/{cur}/"+name_for_pic, "BMP")
+
+"""
+from time import sleep
+from PIL import Image, ImageGrab
+#import yadisk
+
+#y = yadisk.YaDisk(token="AgAAAAAJTGbeAADLW6TZSbwDw0hXk9OhJAgWZ2g")
+
+if True:#y.check_token():   
+    
+    
+    sleep(2.5)
+    img = ImageGrab.grab(bbox = None)
+    
+    img.save("screen.bmp", "BMP")
+    #y.upload("screen.BMP", "/screen.BMP", overwrite = True)
+"""
+
+##########################################################################################
+##########################################################################################
 
 file_exists = os.path.isfile("cleaner_cash.txt")
 if file_exists:
@@ -23,8 +53,12 @@ else:
         f.write("1")
 f.close()
 
+list_for_files = set()
+d_files = {}
+
 def on_modified():
         global old
+        global list_for_files
         for filename in os.listdir(folder_to_track):
             i = 1
             if filename != 'cleaner_cash.txt' and filename != 'Cleaner.py' and filename != 'Cleaner.pyw' and filename != "Cleaner.exe" and filename != "Extensions.txt" and filename != "extensions.txt":
@@ -69,13 +103,23 @@ def on_modified():
                         new_name = new_name.split("/")[4]
                         file_exists = os.path.isfile(folder_destination_path + "/" + new_name)
                     src = folder_to_track + "/" + filename
-
+                    list_for_files.add(new_name)
+                    d_files[new_name] = folder_destination_path + "/" + new_name
                     new_name = folder_destination_path + "/" + new_name
                     os.rename(src, new_name)
                     print(f"{filename} successfully added to the directory")
+                    f = open(f'C:/Users/{cur}/Desktop/{cur}/List_of_files.txt', "w")
+                    #f = open("f'/Users/{cur}/Desktop/{cur}/List_of_directories.txt", "w")
+                    t_list = ""
+                    for name_list in list_for_files:
+                        t_list += name_list + " - " + d_files[name_list] + "\n"
+                    f.write(t_list)
+                    f.close()
+                    
                 except Exception:
                     if filename not in old:
                         print(filename)
+                        #list_for_files += folder_destination_path + " - " + filename + "\n"
                         old.add(filename)
 old = set()
 extensions_folders = {
@@ -232,7 +276,7 @@ extensions_folders = {
     '.tmp' : f"/Users/{cur}/Desktop/{cur}/Text/Other/System",
 }
 
-if os.path.exists(f"/Users/{cur}/Desktop/Extensions.txt") or os.path.exists(f"/Users/{cur}/Desktop/{cur}/Extensions.txt"):
+if os.path.exists(f"/Users/{cur}/Desktop/Extensions.txt"):
         f = open(f"/Users/{cur}/Desktop/Extensions.txt", "r")
         s = f.read().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
         while len(s) != 0:
@@ -240,9 +284,27 @@ if os.path.exists(f"/Users/{cur}/Desktop/Extensions.txt") or os.path.exists(f"/U
                 for i in s:
                         extensions_folders[i] = s[i]
                 s = f.readline().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
-elif os.path.exists(f"/Users/{cur}/Desktop/{cur}/extensions.txt") or \
-     os.path.exists(f"/Users/{cur}/Desktop/extensions.txt"):
-        f = open("extensions.txt", "r")
+                
+elif os.path.exists(f"/Users/{cur}/Desktop/{cur}/Extensions.txt"):
+        f = open(f"/Users/{cur}/Desktop/{cur}/Extensions.txt", "r")
+        s = f.read().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
+        while len(s) != 0:
+                s = dict(map(lambda x: x.split('-'), s.split(',')))
+                for i in s:
+                        extensions_folders[i] = s[i]
+                s = f.readline().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
+                
+elif os.path.exists(f"/Users/{cur}/Desktop/{cur}/extensions.txt"):
+        f = open(f"/Users/{cur}/Desktop/{cur}/extensions.txt", "r")
+        s = f.read().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
+        while len(s) != 0:
+                s = dict(map(lambda x: x.split('-'), s.split(',')))
+                for i in s:
+                        extensions_folders[i] = s[i]
+                s = f.readline().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
+
+elif os.path.exists(f"/Users/{cur}/Desktop/extensions.txt"):
+        f = open(f"/Users/{cur}/Desktop/extensions.txt", "r")
         s = f.read().replace(" ", "").replace('"', "").replace(",", "").replace("\n", ",")
         while len(s) != 0:
                 s = dict(map(lambda x: x.split('-'), s.split(',')))
@@ -271,3 +333,9 @@ except:
         f = open("cleaner_cash.txt", "w")
         f.write("0")
         f.close()
+        try:
+                f = open("f'/Users/{cur}/Desktop/{cur}/List_of_directories.txt", "w")
+                f.write(list_of_files)
+                f.close()
+        except:
+                pass
